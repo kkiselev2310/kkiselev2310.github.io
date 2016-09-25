@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Fusion Tables layers</title>
+    <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        position:absolute;
+        /*left:30%;*/
+        top:0;
+        bottom:0;
+        width: 100%;
+    }
+    /*.map-overlay {
+        position: absolute;
+        width: 30%;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        background-color: #fff;
+        max-height: 100%;
+        overflow: hidden;
+        padding:10px;
+    }
+
+    .map-overlay .listing {
+        overflow: auto;
+        max-height: 100%;
+    }
+
+    .map-overlay .listing > * {
+        display: block;
+        padding: 5px 10px;
+        margin: 0;
+    }
+
+    .map-overlay .listing a {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        color: #404;
+        text-decoration: none;
+    }
+
+    .map-overlay .listing a:last-child {
+        border: none;
+    }
+
+    .map-overlay .listing a:hover {
+        background: #f0f0f0;
+    }*/
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <!--div class='map-overlay'>
+        <h2>Ближайшие станции метро</h2>
+        <div id='feature-listing' class='listing'>
+            Выберите ЖК на карте
+        </div>
+        <a href="#" class="show-all">Показать все ЖК</a>
+    </div-->
+    <script type="text/javascript">
+
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 55.75396, lng: 37.620393},
+            zoom: 11
+        });
+
+        // Create the DIV to hold the control and call the CenterControl() constructor
+        // passing in this DIV.
+        var centerControlDiv = document.createElement('div');
+        new CenterControl(centerControlDiv, map);
+
+        centerControlDiv.index = 1;
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+        var hc_layer = new google.maps.FusionTablesLayer({
+            query: {
+                select: 'col2',
+                from: '1PYlTUhdO4r9cLl9xE6JuApn5_bmE6tzCjdICJXxg'
+            },
+            options: {
+                styleId: 2,
+                templateId: 2
+            }
+        });
+        var metro_layer = new google.maps.FusionTablesLayer({
+            options: {
+                styleId: 2,
+                templateId: 2
+            }
+        });
+
+        function resetMap(){
+            hc_layer.setMap(map);
+            hc_marker.setMap(null);
+            metro_layer.setMap(null);
+        }
+
+        function CenterControl(controlDiv, map) {
+
+          // Set CSS for the control border.
+          var controlUI = document.createElement('div');
+          controlUI.style.backgroundColor = '#fff';
+          controlUI.style.border = '2px solid #fff';
+          controlUI.style.borderRadius = '3px';
+          controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+          controlUI.style.cursor = 'pointer';
+          controlUI.style.marginBottom = '22px';
+          controlUI.style.textAlign = 'center';
+          controlUI.title = 'Показать все ЖК';
+          controlDiv.appendChild(controlUI);
+
+          // Set CSS for the control interior.
+          var controlText = document.createElement('div');
+          controlText.style.color = 'rgb(25,25,25)';
+          controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+          controlText.style.fontSize = '16px';
+          controlText.style.lineHeight = '38px';
+          controlText.style.paddingLeft = '5px';
+          controlText.style.paddingRight = '5px';
+          controlText.innerHTML = 'Показать все ЖК';
+          controlUI.appendChild(controlText);
+
+          // Setup the click event listeners: simply set the map to Chicago.
+          controlUI.addEventListener('click', function() {
+            resetMap();
+          });
+
+        }
+
+        var hc_marker = new google.maps.Marker({position: map.center});
+        var infowindow = new google.maps.InfoWindow();
+        hc_layer.setMap(map);
+
+        google.maps.event.addListener(hc_layer, 'click', function(e) {
+            hc_layer.setMap(null);
+            hc_marker.setPosition(e.latLng);
+            hc_marker.setMap(map);
+            infowindow.setContent('<div id="content">' + e.row.name.value + '</div>');
+            infowindow.open(map, hc_marker);
+            hc_marker.addListener('click', function(){
+                infowindow.open(map, hc_marker);
+            });
+            metro_layer.setOptions({
+              query: {
+                select: 'col3',
+                from: '1J2WbGefYt2jNUAk3kb7cFfQ9xU7MG42208fEyYgH',
+                where: 'hc_id = ' + e.row.id.value
+              }
+            });
+            metro_layer.setMap(map);
+        });
+        /*google.maps.event.addListener(map, 'dblclick', function(e) {
+            hc_layer.setMap(map);
+            hc_marker.setMap(null);
+            metro_layer.setMap(null);
+        });*/
+    }
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?v3&key=AIzaSyCXY-zPk5ga4BRUY-xpYRrGOO4pZ_Cu5C0&callback=initMap&signed_in=true" async defer>
+    </script>
+</body>
+</html>
